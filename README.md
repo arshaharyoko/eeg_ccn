@@ -1,0 +1,2 @@
+Classification Network comprised of GMM (and experimenting with) HMM designed to classify EEG wave patterns to some input states.
+Tested with NeuroSky Mindwave Mobile 2, data acquisition via LabStreamingLayer with drivers from OpenViBE software.
