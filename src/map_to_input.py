@@ -1,5 +1,5 @@
 import pynput
-import time
+# import time
 
 class InputPeripherals:
     def __init__(self):
@@ -16,12 +16,20 @@ class InputPeripherals:
         self.mouse.position = (self.x+x, self.y+y)
         self.x, self.y = self.mouse.position
 
-    def wasd_map(self, key):
-        if key==1:
-            self.keyboard.press('W')
-        elif key==2:
-            self.keyboard.press('S')
+    def asd_map(self, key):
+        if key==2:
+            self.keyboard.press('s')
+            self.keyboard.release('s')
+        elif key==1:
+            self.keyboard.press('b')
+            self.keyboard.release('b')
         elif key==3:
-            self.keyboard.press('A')
+            self.keyboard.press('a')
+            self.keyboard.release('a')
         elif key==4:
-            self.keyboard.press('D')
+            self.keyboard.press('d')
+            self.keyboard.release('d')
+
+    def _map(self, key):
+        self.keyboard.press(key)
+        self.keyboard.release(key)

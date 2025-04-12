@@ -7,6 +7,7 @@ from map_to_input import InputPeripherals
 from pathlib import Path
 import json
 import time
+import datetime
 
 streams = resolve_streams()
 inlet = StreamInlet(streams[0])
@@ -94,31 +95,33 @@ if plot:
 #
 ##############################
 
-with open(Path(__file__).parent / "test_dict.txt", 'r') as f:
-    test_dict = {int(k): v for k, v in json.loads(f.read()).items()}
-    samples = 0
-    successes = 0
-    categorical_samples = {k: 0 for k in range(len(states))}
-    categorical_successes = {k: 0 for k in range(len(states))}
-    for k, features in test_dict.items():
-        samples += len(features)
-        categorical_samples[k] = len(features)
-        for v in features:
-            label, hidden_states = ccn.process(v)
-            if label==k and hidden_states[chunk_size-1]==k:
-                successes += 1
-                categorical_successes[k] += 1
+# with open(Path(__file__).parent / "test_dict.txt", 'r') as f:
+#     test_dict = {int(k): v for k, v in json.loads(f.read()).items()}
+#     samples = 0
+#     successes = 0
+#     categorical_samples = {k: 0 for k in range(len(states))}
+#     categorical_successes = {k: 0 for k in range(len(states))}
+#     for k, features in test_dict.items():
+#         samples += len(features)
+#         categorical_samples[k] = len(features)
+#         for v in features:
+#             label, hidden_states = ccn.process(v)
+#             if label==k and hidden_states[chunk_size-1]==k:
+#                 successes += 1
+#                 categorical_successes[k] += 1
 
-    print(f"\nTotal Samples: {samples}")
-    print(f"\nSuccessful Predictions: {successes}")
-    print(f"\nAccuracy: {(successes/samples)*100}%")
+#     print(f"\nTotal Samples: {samples}")
+#     print(f"\nSuccessful Predictions: {successes}")
+#     print(f"\nAccuracy: {(successes/samples)*100}%")
 
-    for k, v in categorical_samples.items():
-        print(f"\n{k} Samples: {categorical_samples[k]}")
-        print(f"\n{k} Successes: {categorical_successes[k]}")
-        print(f"\n{k} Accuracy: {(categorical_successes[k]/categorical_samples[k])*100}%")
+#     for k, v in categorical_samples.items():
+#         print(f"\n{k} Samples: {categorical_samples[k]}")
+#         print(f"\n{k} Successes: {categorical_successes[k]}")
+#         print(f"\n{k} Accuracy: {(categorical_successes[k]/categorical_samples[k])*100}%")
 
+last_trigger_time = datetime.datetime.now()
 while True:
+    start = datetime.datetime.now()
     chunk = get_complete_chunk(inlet, chunk_size)
     n_samples = chunk.shape[0]
 
@@ -128,9 +131,17 @@ while True:
     
     # Predict rolling wave
     label, hidden_states = ccn.process(chunk[:,0])
+    lb_theta_ratio = chunk[chunk_size-1,5]/chunk[chunk_size-1,2]
+    interval = 1 / lb_theta_ratio if lb_theta_ratio != 0 else 1.0
     # if(label==hidden_states[chunk_size-1]):
-    #     inputs.wasd_map(label)
+    #     inputs.asd_map(label)
 
+    if (datetime.datetime.now() - last_trigger_time).total_seconds() >= interval/5:
+        elapsed = (datetime.datetime.now() - last_trigger_time).total_seconds()
+        # print(f"Elapsed time: {elapsed:.3f} sec (trigger interval = {interval:.3f} sec)")
+        last_trigger_time = datetime.datetime.now()
+        inputs._map('b')
+    
     if plot:
         for ch in range(num_channels):
             lines[ch].set_ydata(data[:,ch])
